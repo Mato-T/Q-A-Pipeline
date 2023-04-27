@@ -16,7 +16,7 @@
   docker run -d -p 9200:9200 -e "discovery.type=single-node" elasticsearch:7.9.2
 - The following sections will focus on the Python code in this repository. In the Python environment, make sure everything is up and running by sending a small HTTP request to the localhost. With the server running, instantiate the document store, retriever and reader.
 - At first, I will use BM25 as retriever which is an improved version of the classic Term Frequency-Inverse Document Frequency (TF-iDF) algorithm. It represents the question and context as sparse vectors and relevance of a query and context is then determined by computing the inner product of the two vectors.
-- As the reader, I am using FARMReader, which is based on deepset's (developed Haystack) FARM framework. Another possibility is the TransformersReader, which is based on the QA pipeline from Hugging Face. Although both readers handle a model's weight the same, Hugging Face's pipeline normalizes the start and end logits with a softmax in each passage.
+- As the reader, I am using FARMReader, which is based on deepset's (developed Haystack) FARM framework. Another possibility is the TransformersReader, which is based on the QA pipeline from Hugging Face. Although both readers handle a model's weight the same, Hugging Face's pipeline normalizes the start and end logits (un-normalized prediction) with a softmax in each passage.
 - As a consequence, it is only meaningful to compare answer scores between answers extracted from the same passage, where the probabilities sum to 1. For example, an answer score of 0.9 from one passage is not necessarily better than a score of 0.8 from another. In FARM, the logits are not normalized, so inter-passage answers can be compared more easily.
 - I also made a first prediction. The first answer fits the question, the second does not produce anything and the third is off-topic. In the next section, I will make a baseline evaluation with more qualitative metrics.
 
@@ -27,6 +27,24 @@
 - When it comes to the reader, two main metrics are used:
   - Exact Match (EM): a binary metric	that returns 1 if the characters in the predicted and ground truth answers match exactly, and 0 otherwise. If no answer is expected, the EM is 0 if it predicts any text at all
   - F1-score: Measures the harmonic mean of the precision and recall
-- The results of the retriever
+- The results of the evaluation of the retriever are mediocre, being in the range of 0.4 to 0.5 for both scores.
+
+### Dense Passage Retrieval
+- A well-known limitation of sparse retrievers like B25 is that they can fail to capture the relevant documents if the user query contains terms that don’t match exactly those of the review. One alternative is to use dense embeddings to represent the question and document, and a popular architecture is known as Dense Passage Retrieval (DPR). The main idea behind DPR is to use two BERT models as encoders for the question and passage, like so:
+
+  ![image](https://user-images.githubusercontent.com/127037803/234890772-09b6f10b-70c3-4d1c-8587-e298d8b913b6.png)
+- In Haystack, a retriever for DPR is initialized in a similar way to the process for BM25. In addition to specifying the document store, also pick the BERT encoders for the question and passage. These encoders are trained by giving them questions with relevant (positive) passages and irrelevant (negative) passages, where the goal is to learn that relevant question-passage pairs have a higher similarity.
+- In this case, however, using DPR did not result in a performance incease. However, it is a good practice to use it as a default choice.
+
+## Fine-Tuning and Inference
+- The most straighforward way to improve the reader is by fine-tuning the MiniLM model further on the SubjQA training set. The FARMReader has a train() method that is designed for this purpose and expects the data to be in SQuAD JSON format, where all QA pairs are grouped together. Another function was required to make this conversion happen.
+- After creating the two JSON file, training can begin. Training the model definitely resulted in a performane increase, as shown below:
+
+  ![image](https://user-images.githubusercontent.com/127037803/234892314-56fb4e4b-65ce-4f3e-9a6c-ca4cbc03d006.png)
+- As a final step, I wanted to see if there was a notable difference in the answers the would be returned by the reader. The first answer is very fitting, the second did not return anything, and the last one also matches the question, so I definitely see an improvement over the old reader.
+
+## Conclusion
+
+
 
 
