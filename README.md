@@ -44,7 +44,9 @@
 - As a final step, I wanted to see if there was a notable difference in the answers the would be returned by the reader. The first answer is very fitting, the second did not return anything, and the last one also matches the question, so I definitely see an improvement over the old reader.
 
 ## Conclusion
-
+- I really liked this project, as I came to learn many different tools, such as Haystack. I have never worked with Haystack before, but the hours I spent learning the framework really increased my scope of NLP. The most challenging part, actually, was finding the right dataset. I was not aware that fine-tuning the reader would require information about where the answer is found in the text. I started the project with a different dataset when I came to realize that it did not include the information. Luckily, it was not too much work adjusting the code.
+- On Kaggle, I was experimenting with many different Hugging Face models, comparing and fine-tuning them. I am really greatful that Kaggle provides 30h of GPU for everyone, so I was able to try out many different things (for other NLP tasks). However, I had to initialize the document store on my computer, so naturally, I was fine-tuning the model using my own GPU. For this reason, I did not spend too much time on fine-tuning, resulting in a medium performance increase only. 
+- However, this project was meant for me to get deeper into the QA-Pipeline and domain adaptation is only one part of it. In the future, I will likely take more steps into the direction of QA-Pipeline development, as I think information retrieval is a very valuable task to master.
 
 
 
